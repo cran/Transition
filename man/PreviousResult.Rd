@@ -10,7 +10,8 @@ add_prev_result(
   object,
   subject = "subject",
   timepoint = "timepoint",
-  result = "result"
+  result = "result",
+  prev_result = "prev_result"
 )
 
 get_prev_result(
@@ -30,13 +31,17 @@ a data frame) containing the data to be analysed.}
 \item{timepoint}{\code{character}, name of the column recording time points (as \code{\link{Dates}})
 of testing of subjects; default \code{"timepoint"}.}
 
-\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}})
-recording test results; default \code{"result"}.}
+\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}},
+or binary, see \emph{Details}) recording test results; default \code{"result"}.}
+
+\item{prev_result}{\code{character}, name to be used for a new column to record previous result;
+default \code{"prev_result"}.}
 }
 \value{
 \item{\code{add_prev_result()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-   column of type \code{\link[base:factor]{ordered factor}} containing the values of the previous
-   test results.}
+   column named as specified by argument \code{prev_result} and of type
+   \code{\link[base:factor]{ordered factor}} or \code{\link{integer}} depending on whether the
+   results are semi-quantitiative or binary.}
 
 \item{\code{get_prev_result()}}{An \code{\link[base:factor]{ordered factor}} of length
    \code{\link{nrow}(object)}, containing the values of the previous test results ordered in the

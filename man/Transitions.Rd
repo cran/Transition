@@ -35,8 +35,8 @@ a data frame) containing the data to be analysed.}
 \item{timepoint}{\code{character}, name of the column recording time points (as \code{\link{Dates}})
 of testing of subjects; default \code{"timepoint"}.}
 
-\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}})
-recording test results; default \code{"result"}.}
+\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}},
+or binary, see \emph{Details}) recording test results; default \code{"result"}.}
 
 \item{transition}{\code{character}, name to be used for a new column (of type
 \code{\link{integer}}) to record transitions; default \code{"transition"}.}
@@ -69,9 +69,10 @@ if not, outputs will be undefined.
 Time points should be formatted as \code{\link{Dates}} and included in data frame \code{object} in
 the column named as specified by argument \code{timepoint} (see \emph{Note}).
 
-Test results should be semi-quantitiative, formatted as \code{\link[base:ordered]{ordered factor}}
-and included in data frame \code{object} in the column named as specified by argument \code{result}
-(see \emph{Note}).
+Test results should either be semi-quantitiative, formatted as an
+\code{\link[base:ordered]{ordered factor}} (see \emph{Note}), or binary data formatted as an
+\code{\link{integer}} (or \code{\link{numeric}}) vector with values of either \code{1} or \code{0},
+and included in \code{object} in the data frame column specified by argument \code{result}.
 
 Temporal transitions in the test \code{results} for each \code{subject} within the \code{object}
 \code{\link{data.frame}} are characterised using methods governed by options \code{cap} and

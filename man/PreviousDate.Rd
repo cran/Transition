@@ -10,7 +10,8 @@ add_prev_date(
   object,
   subject = "subject",
   timepoint = "timepoint",
-  result = "result"
+  result = "result",
+  prev_date = "prev_date"
 )
 
 get_prev_date(
@@ -30,12 +31,16 @@ a data frame) containing the data to be analysed.}
 \item{timepoint}{\code{character}, name of the column recording time points (as \code{\link{Dates}})
 of testing of subjects; default \code{"timepoint"}.}
 
-\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}})
-recording test results; default \code{"result"}.}
+\item{result}{\code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}},
+or binary, see \emph{Details}) recording test results; default \code{"result"}.}
+
+\item{prev_date}{\code{character}, name to be used for a new column to record previous test dates;
+default \code{"prev_date"}.}
 }
 \value{
 \item{\code{add_prev_date()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-   column of class \code{\link{Date}} containing the values of the previous test dates.}
+   column named as specified by argument \code{prev_date} of class \code{\link{Date}} containing
+   the values of the previous test dates.}
 
 \item{\code{get_prev_date()}}{An \code{vector} of length \code{\link{nrow}(object)},
    class \code{\link{Date}}, containing the values of the previous test dates ordered in the exact

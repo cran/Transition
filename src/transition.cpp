@@ -98,7 +98,7 @@ inline int adjust(int diff, int cap, int modulate)
 	bool neg = std::signbit(diff);
 	diff = abs(diff);
 	if (modulate > 1)
-		diff = (diff + 1) / modulate;
+		diff = (diff + modulate - 1) / modulate;
 	if (bool(cap))
 		diff = (diff < cap) ? diff : cap;
 	return neg ? diff *= -1 : diff;
@@ -112,18 +112,20 @@ inline int adjust(int diff, int cap, int modulate)
 template<typename T>
 T Transitiondata::typechecker(int colno, int arg)
 {	
-//	cout << "@Transitiondata::typechecker<T>(int, int) colno " << colno << "; arg " << arg << std::endl;
+//	cout << "@Transitiondata::typechecker<T>(int, int) colno " << colno << "; arg " << arg << endl;
 	std::string errstr("column `");
-	errstr += vector<string>(df.names())[colno] + "` not ";
+	errstr += vector<string>(df.names())[colno] + "`";
+	std::string wrnstr(errstr);
 	RObject colobj { df[colno] };
 	bool good = is<T>(df[colno]);
+	bool warn = false;
 	switch (arg) {
 		case 0:
-			if (!good) errstr += " of class data.frame";
+			if (!good) errstr += " not of class data.frame";
 			break;
 
 		case 1:
-			if (!good) errstr += "an integer or factor";
+			if (!good) errstr += " not an integer or factor";
 			break;
 
 		case 2:
@@ -131,21 +133,33 @@ T Transitiondata::typechecker(int colno, int arg)
 				if (colobj.inherits("Date")) {
 					if (!is<NumericVector>(colobj)) {
 						if (is<IntegerVector>(colobj)) {
-							warning(errstr + "of correct type: Date converted from integer to numeric");
+							wrnstr += ": Date converted from integer to numeric";
+							warn = true;
 							df[colno] = as<NumericVector>(df[colno]);
 							good = true; 
 						}
-						errstr += "of class Date, type numeric";
+						errstr += " not of class Date, type numeric";
 					}
-				} else errstr += " of class Date";
+				} else errstr += " not of class Date";
 			}
 			break;
 
 		case 3:
 			if (!(good && colobj.inherits("factor") && colobj.inherits("ordered"))) {
-				errstr += "an ordered factor";
-				good = false;
+				if (is<NumericVector>(colobj)) {
+					wrnstr += ": type converted from numeric to integer";
+					warn = true;
+					df[colno] = as<IntegerVector>(df[colno]);
+					good = true;
+				}
+				if (good) {
+					const vector<int>& v = as<vector<int>>(colobj);   
+					auto minmax = std::minmax_element(v.begin(), v.end());
+					good = !(0 > *minmax.first || 1 < *minmax.second);
+				} else
+					good = false;
 			}
+			errstr += " neither an ordered factor nor an integer vector with all values either 0 or 1";
 			break;
 
 			default:
@@ -153,6 +167,8 @@ T Transitiondata::typechecker(int colno, int arg)
 	}
 	if (!good)
 		throw std::invalid_argument(errstr);
+	if (warn)
+		warning(wrnstr);
 	return df[colno];
 }
 
@@ -247,9 +263,11 @@ inline IntegerVector prevres_intvec(DataFrame object, const char* subject, const
 //	cout << "@prevres_intvec(DataFrame, const char*, const char*, const char*) subject " << subject
 //		 << "; timepoint " << timepoint << "; result " << result << endl;
 	int testcol { colpos(object, result) };
+    RObject colobj { object[testcol] };
 	IntegerVector intvec(wrap(vector<int>(Transitiondata(object, colpos(object, subject), colpos(object, timepoint), testcol).prev_result())));
-	intvec.attr("class") = CharacterVector::create("factor", "ordered");
-	intvec.attr("levels") = (RObject { object[testcol] }).attr("levels");
+	if (colobj.inherits("factor") && colobj.inherits("ordered"))
+		intvec.attr("class") = CharacterVector::create("factor", "ordered");
+	intvec.attr("levels") = colobj.attr("levels");
 	return intvec;
 }
 
@@ -279,9 +297,10 @@ inline IntegerVector prevres_intvec(DataFrame object, const char* subject, const
 //' Time points should be formatted as \code{\link{Dates}} and included in data frame \code{object} in
 //' the column named as specified by argument \code{timepoint} (see \emph{Note}).
 //'
-//' Test results should be semi-quantitiative, formatted as \code{\link[base:ordered]{ordered factor}}
-//' and included in data frame \code{object} in the column named as specified by argument \code{result}
-//' (see \emph{Note}).
+//' Test results should either be semi-quantitiative, formatted as an
+//' \code{\link[base:ordered]{ordered factor}} (see \emph{Note}), or binary data formatted as an
+//' \code{\link{integer}} (or \code{\link{numeric}}) vector with values of either \code{1} or \code{0},
+//' and included in \code{object} in the data frame column specified by argument \code{result}.
 //'
 //' Temporal transitions in the test \code{results} for each \code{subject} within the \code{object}
 //' \code{\link{data.frame}} are characterised using methods governed by options \code{cap} and
@@ -304,8 +323,8 @@ inline IntegerVector prevres_intvec(DataFrame object, const char* subject, const
 //' @param timepoint \code{character}, name of the column recording time points (as \code{\link{Dates}})
 //'   of testing of subjects; default \code{"timepoint"}.
 //'
-//' @param result \code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}})
-//'   recording test results; default \code{"result"}.
+//' @param result \code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}},
+//'   or binary, see \emph{Details}) recording test results; default \code{"result"}.
 //'
 //' @param transition \code{character}, name to be used for a new column (of type
 //'   \code{\link{integer}}) to record transitions; default \code{"transition"}.
@@ -445,12 +464,16 @@ IntegerVector get_transitions(
 //' @seealso
 //' \code{\link{data.frame}}, \code{\link{Dates}}, \code{\link[base:factor]{ordered factor}}.
 //'
+//' @param prev_date \code{character}, name to be used for a new column to record previous test dates;
+//'   default \code{"prev_date"}.
+//'
 //' @inheritParams Transitions
 //'
 //' @return
 //'
 //' \item{\code{add_prev_date()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-//'    column of class \code{\link{Date}} containing the values of the previous test dates.}
+//'    column named as specified by argument \code{prev_date} of class \code{\link{Date}} containing
+//'    the values of the previous test dates.}
 //'
 //' \item{\code{get_prev_date()}}{An \code{vector} of length \code{\link{nrow}(object)},
 //'    class \code{\link{Date}}, containing the values of the previous test dates ordered in the exact
@@ -522,16 +545,21 @@ IntegerVector get_transitions(
 //' rm(df)
 //'
 // [[Rcpp::export]]
-DataFrame add_prev_date(DataFrame object, const char* subject = "subject", const char* timepoint = "timepoint", const char* result = "result")
+DataFrame add_prev_date(
+	DataFrame object, const char* subject = "subject",
+	const char* timepoint = "timepoint",
+	const char* result = "result",
+	const char* prev_date = "prev_date")
 {
-//	cout << "——Rcpp::export——add_prev_date(DataFrame, const char*, const char*, const char*) subject " << subject << "; timepoint " << timepoint << "; result " << result << endl;
+//	cout << "——Rcpp::export——add_prev_date(DataFrame, const char*, const char*, const char*) subject "
+//	<< subject << "; timepoint " << timepoint << "; result " << result << "; prev_date " << prev_date << endl;
 	try {
-		object.push_back(DateVector(wrap(Transitiondata(object, colpos(object, subject), colpos(object, timepoint), colpos(object, result)).prev_date())), "prev_date");
-		return object;
+        	object.push_back(DateVector(wrap(Transitiondata(object, colpos(object, subject), colpos(object, timepoint), colpos(object, result)).prev_date())), prev_date);
+ 	return object;
 	} catch (exception& e) {
-		Rcerr << "Error in add_prev_date(): " << e.what() << '\n';
+        	Rcerr << "Error in add_prev_date(): " << e.what() << '\n';
 	} catch (std::invalid_argument& iva) {
-		Rcerr << "Error invalid argument: " << iva.what() << '\n';
+        	Rcerr << "Error invalid argument: " << iva.what() << '\n';
 	}
 	return DataFrame::create();
 }
@@ -572,13 +600,17 @@ DateVector get_prev_date(DataFrame object, const char* subject = "subject", cons
 //' @seealso
 //' \code{\link{data.frame}}, \code{\link{Dates}}, \code{\link[base:factor]{ordered factor}}.
 //'
+//' @param prev_result \code{character}, name to be used for a new column to record previous result;
+//'   default \code{"prev_result"}.
+//'
 //' @inheritParams Transitions
 //'
 //' @return
 //'
 //' \item{\code{add_prev_result()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-//'    column of type \code{\link[base:factor]{ordered factor}} containing the values of the previous
-//'    test results.}
+//'    column named as specified by argument \code{prev_result} and of type
+//'    \code{\link[base:factor]{ordered factor}} or \code{\link{integer}} depending on whether the
+//'    results are semi-quantitiative or binary.}
 //'
 //' \item{\code{get_prev_result()}}{An \code{\link[base:factor]{ordered factor}} of length
 //'    \code{\link{nrow}(object)}, containing the values of the previous test results ordered in the
@@ -605,11 +637,18 @@ DateVector get_prev_date(DataFrame object, const char* subject = "subject", cons
 //' rm(Blackmore)
 //'
 // [[Rcpp::export]]
-DataFrame add_prev_result(DataFrame object, const char* subject = "subject", const char* timepoint = "timepoint", const char* result = "result")
+DataFrame add_prev_result(
+	DataFrame object,
+	const char* subject = "subject",
+	const char* timepoint = "timepoint",
+	const char* result = "result",
+	const char* prev_result = "prev_result"
+)
 {
-//	cout << "——Rcpp::export——add_prev_result(DataFrame, const char*, const char*, const char*) subject " << subject << "; timepoint " << timepoint << "; result " << result << endl;
+//	cout << "——Rcpp::export——add_prev_result(DataFrame, const char*, const char*, const char*, const char*) subject "
+//		 << subject << "; timepoint " << timepoint << "; result " << result << "; prev_result " << prev_result << endl;
 	try {
-		object.push_back(prevres_intvec(object, subject, timepoint, result), "prev_result");
+		object.push_back(prevres_intvec(object, subject, timepoint, result), prev_result);
 		return object;
 	} catch (exception& e) {
 		Rcerr << "Error in add_prev_result(): " << e.what() << '\n';

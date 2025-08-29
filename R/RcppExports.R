@@ -23,9 +23,10 @@
 #' Time points should be formatted as \code{\link{Dates}} and included in data frame \code{object} in
 #' the column named as specified by argument \code{timepoint} (see \emph{Note}).
 #'
-#' Test results should be semi-quantitiative, formatted as \code{\link[base:ordered]{ordered factor}}
-#' and included in data frame \code{object} in the column named as specified by argument \code{result}
-#' (see \emph{Note}).
+#' Test results should either be semi-quantitiative, formatted as an
+#' \code{\link[base:ordered]{ordered factor}} (see \emph{Note}), or binary data formatted as an
+#' \code{\link{integer}} (or \code{\link{numeric}}) vector with values of either \code{1} or \code{0},
+#' and included in \code{object} in the data frame column specified by argument \code{result}.
 #'
 #' Temporal transitions in the test \code{results} for each \code{subject} within the \code{object}
 #' \code{\link{data.frame}} are characterised using methods governed by options \code{cap} and
@@ -48,8 +49,8 @@
 #' @param timepoint \code{character}, name of the column recording time points (as \code{\link{Dates}})
 #'   of testing of subjects; default \code{"timepoint"}.
 #'
-#' @param result \code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}})
-#'   recording test results; default \code{"result"}.
+#' @param result \code{character}, name of the column (of type \code{\link[base:factor]{ordered factor}},
+#'   or binary, see \emph{Details}) recording test results; default \code{"result"}.
 #'
 #' @param transition \code{character}, name to be used for a new column (of type
 #'   \code{\link{integer}}) to record transitions; default \code{"transition"}.
@@ -152,12 +153,16 @@ get_transitions <- function(object, subject = "subject", timepoint = "timepoint"
 #' @seealso
 #' \code{\link{data.frame}}, \code{\link{Dates}}, \code{\link[base:factor]{ordered factor}}.
 #'
+#' @param prev_date \code{character}, name to be used for a new column to record previous test dates;
+#'   default \code{"prev_date"}.
+#'
 #' @inheritParams Transitions
 #'
 #' @return
 #'
 #' \item{\code{add_prev_date()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-#'    column of class \code{\link{Date}} containing the values of the previous test dates.}
+#'    column named as specified by argument \code{prev_date} of class \code{\link{Date}} containing
+#'    the values of the previous test dates.}
 #'
 #' \item{\code{get_prev_date()}}{An \code{vector} of length \code{\link{nrow}(object)},
 #'    class \code{\link{Date}}, containing the values of the previous test dates ordered in the exact
@@ -228,8 +233,8 @@ get_transitions <- function(object, subject = "subject", timepoint = "timepoint"
 #'
 #' rm(df)
 #'
-add_prev_date <- function(object, subject = "subject", timepoint = "timepoint", result = "result") {
-    .Call(`_Transition_add_prev_date`, object, subject, timepoint, result)
+add_prev_date <- function(object, subject = "subject", timepoint = "timepoint", result = "result", prev_date = "prev_date") {
+    .Call(`_Transition_add_prev_date`, object, subject, timepoint, result, prev_date)
 }
 
 #' @rdname PreviousDate
@@ -256,13 +261,17 @@ get_prev_date <- function(object, subject = "subject", timepoint = "timepoint", 
 #' @seealso
 #' \code{\link{data.frame}}, \code{\link{Dates}}, \code{\link[base:factor]{ordered factor}}.
 #'
+#' @param prev_result \code{character}, name to be used for a new column to record previous result;
+#'   default \code{"prev_result"}.
+#'
 #' @inheritParams Transitions
 #'
 #' @return
 #'
 #' \item{\code{add_prev_result()}}{A \code{\link{data.frame}} based on \code{object}, with an added
-#'    column of type \code{\link[base:factor]{ordered factor}} containing the values of the previous
-#'    test results.}
+#'    column named as specified by argument \code{prev_result} and of type
+#'    \code{\link[base:factor]{ordered factor}} or \code{\link{integer}} depending on whether the
+#'    results are semi-quantitiative or binary.}
 #'
 #' \item{\code{get_prev_result()}}{An \code{\link[base:factor]{ordered factor}} of length
 #'    \code{\link{nrow}(object)}, containing the values of the previous test results ordered in the
@@ -288,8 +297,8 @@ get_prev_date <- function(object, subject = "subject", timepoint = "timepoint", 
 #'
 #' rm(Blackmore)
 #'
-add_prev_result <- function(object, subject = "subject", timepoint = "timepoint", result = "result") {
-    .Call(`_Transition_add_prev_result`, object, subject, timepoint, result)
+add_prev_result <- function(object, subject = "subject", timepoint = "timepoint", result = "result", prev_result = "prev_result") {
+    .Call(`_Transition_add_prev_result`, object, subject, timepoint, result, prev_result)
 }
 
 #' @rdname PreviousResult

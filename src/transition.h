@@ -71,9 +71,9 @@ inline IntegerVector prevres_intvec(DataFrame, const char*, const char*, const c
 // Exported
 DataFrame add_transitions(DataFrame object, const char* subject, const char* timepoint, const char* result, const char* transition, int cap, int modulator); 
 IntegerVector get_transitions(DataFrame object, const char* subject, const char* timepoint, const char* result, int cap, int modulator); 
-DataFrame add_prev_date(DataFrame object, const char* subject, const char* timepoint, const char* result);
+DataFrame add_prev_date(DataFrame object, const char* subject, const char* timepoint, const char* result, const char* prev_date);
 DateVector get_prev_date(DataFrame object, const char* subject, const char* timepoint, const char* result);
-DataFrame add_prev_result(DataFrame object, const char* subject, const char* timepoint, const char* result);
+DataFrame add_prev_result(DataFrame object, const char* subject, const char* timepoint, const char* result, const char* prev_result);
 IntegerVector get_prev_result(DataFrame object, const char* subject, const char* timepoint, const char* result);
 List uniques(DataFrame object, const char* subject, const char* timepoint, const char* result);
 
