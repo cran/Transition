@@ -73,7 +73,8 @@
 #'   to R \code{Dates} conveniently using \code{\link{as.Date}()}. If only \emph{year} information is
 #'   available, arbitrary values could be used consistently for month and day e.g., 1st of January of
 #'   each year; likewise, the first day of each month could be used arbitrary, if only the
-#'   \emph{year} and \emph{month} were known.
+#'   \emph{year} and \emph{month} were known. See vignette 
+#'   \href{../doc/convertDate.pdf}{Converting numeric values to class \code{"Date"}} for examples.
 #'
 #' Quantitive results available as \code{\link{numeric}} data can be converted to a semi-quantitative
 #'   \code{\link[base:factor]{ordered factor}} conveniently using \code{\link{cut}()} (see \emph{examples}).
@@ -141,7 +142,7 @@ get_transitions <- function(object, subject = "subject", timepoint = "timepoint"
 #' PreviousDate
 #'
 #' @description
-#' \code{get_prev_dates()} identifies the previous test date for individual subjects and timepoints
+#' \code{get_prev_date()} identifies the previous test date for individual subjects and timepoints
 #' in a longitudinal study.
 #'
 #' \code{add_prev_date()} interpolates these previous test dates into a data frame for further analysis.
@@ -164,8 +165,8 @@ get_transitions <- function(object, subject = "subject", timepoint = "timepoint"
 #'    column named as specified by argument \code{prev_date} of class \code{\link{Date}} containing
 #'    the values of the previous test dates.}
 #'
-#' \item{\code{get_prev_date()}}{An \code{vector} of length \code{\link{nrow}(object)},
-#'    class \code{\link{Date}}, containing the values of the previous test dates ordered in the exact
+#' \item{\code{get_prev_date()}}{A \code{vector} of class \code{\link{Date}}, length
+#'    \code{\link{nrow}(object)}, containing the values of the previous test dates ordered in the exact
 #'    sequence of the \code{subject} and \code{timepoint} in \code{object}.}
 #'
 #'
@@ -189,50 +190,6 @@ get_transitions <- function(object, subject = "subject", timepoint = "timepoint"
 #'
 #' rm(Blackmore)
 #'
-#' ###
-#' ## Example on formatting numeric values as R dates
-#'
-#' #  Data frame containing year as numeric: 2018 to 2025
-#' (df <- data.frame(
-#'     subject = rep(1001:1003),
-#'     timepoint = rep(2018:2025, each = 3),
-#'     result = gl(3, 4, lab = c("jolly", "good", "show"), ordered = TRUE)
-#'     ))
-#'
-#' #  Convert to R dates
-#' df <- transform(df,
-#'            timepoint = as.Date(paste(timepoint, "01", "01", sep = "-"))
-#'       )
-#'
-#'   # Add column of test result transitions (defaults: cap = 0, modulate = 0)
-#' (df <- add_transitions(df))
-#'
-#' # Format R dates just to show the year
-#' transform(df, timepoint = format(timepoint, "%Y"))
-#'
-#' #  Data frame containing year and month as numeric: July 2024 to June 2025
-#' (df <- data.frame(
-#'            subject = 1001:1002,
-#'            year = rep(2024:2025, each = 12),
-#'            month = rep(c(7:12, 1:6), each = 2),
-#'            result = gl(2, 3, lab = c("low", "high"), ordered = TRUE)
-#'        ))
-#'
-#' #  Convert to R dates
-#' df <- transform(df, timepoint = as.Date(paste(year, month, "01", sep = "-")))
-#' \dontshow{
-#'     df$year <- NULL
-#'     df$month <- NULL
-#' }
-#'
-#'   # Add column of test result transitions (defaults: cap = 0, modulate = 0)
-#' (df <- add_transitions(df))
-#'
-#' # Format R dates just to show the month and year
-#' transform(df, timepoint = format(timepoint, "%b-%Y"))
-#'
-#' rm(df)
-#'
 add_prev_date <- function(object, subject = "subject", timepoint = "timepoint", result = "result", prev_date = "prev_date") {
     .Call(`_Transition_add_prev_date`, object, subject, timepoint, result, prev_date)
 }
@@ -249,7 +206,7 @@ get_prev_date <- function(object, subject = "subject", timepoint = "timepoint", 
 #' PreviousResult
 #'
 #' @description
-#' \code{get_prev_results()} identifies the previous test result for individual subjects and timepoints
+#' \code{get_prev_result()} identifies the previous test result for individual subjects and timepoints
 #' in a longitudinal study.
 #'
 #' \code{add_prev_result()} interpolates these previous test results into a data frame for further analysis.

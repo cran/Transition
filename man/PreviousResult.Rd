@@ -48,7 +48,7 @@ default \code{"prev_result"}.}
    exact sequence of the \code{subject} and \code{timepoint} in \code{object}.}
 }
 \description{
-\code{get_prev_results()} identifies the previous test result for individual subjects and timepoints
+\code{get_prev_result()} identifies the previous test result for individual subjects and timepoints
 in a longitudinal study.
 
 \code{add_prev_result()} interpolates these previous test results into a data frame for further analysis.

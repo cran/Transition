@@ -1,0 +1,142 @@
+% File src/library/Transition/vignettes/convertDate.Rnw
+% Part of the Transition package, https://mark-eis.github.io/Transition/
+% Copyright 2024-2026 Mark Eisler
+% Distributed under the MIT License
+
+\documentclass[a4paper]{article}
+
+\usepackage{Rd}
+\usepackage{hyperref}
+
+\hypersetup{colorlinks = true, linkcolor = blue, urlcolor = blue}
+
+\setlength{\parindent}{0in}
+\setlength{\parskip}{.1in}
+\setlength{\textwidth}{140mm}
+\setlength{\oddsidemargin}{10mm}
+
+\title{Converting numeric values to class \code{"Date"}}
+\author{Mark Eisler and Ana Rabaza}
+% \VignetteIndexEntry{Converting numeric values to class "Date"}
+% \VignettePackage{Transition}
+
+\begin{document}
+
+\maketitle
+
+<<echo=FALSE, results=hide>>=
+library(Transition)
+options(width = 80, continue = "  ",
+        try.outFile = stdout())
+@
+
+\section{Introduction}
+
+For each observation of a subject in a longitudinal study data set,
+the main \strong{Transition} package functions
+\code{add\_prev\_date()}, \code{add\_prev\_result()} and
+\code{add\_transitions()} all need to identify the previous
+observation for that same subject, if any. For compatibility with
+these \strong{Transition} package functions, the timings of
+observations in a dataset, each referred to as a
+\emph{timepoint}, should be coded within the data frame
+as \R{} objects of class
+\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/Dates.html}
+{\code{"Date"}}, representing calendar dates.
+
+This vignette explains how timepoints represented by numeric values
+in data may be easily converted to class {\code{"Date"}, using the \R{}
+\strong{base} package function
+\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
+{\code{as.Date()}}.
+
+\section{Convert numeric values representing year to class \code{"Date"}}
+
+We start by creating an example data frame of longitudinal data
+containing years 2018 to 2025 as numeric values for three subjects
+with observations having one of three possible ordinal values: -
+
+<<>>=
+(df <- data.frame(
+        subject = rep(1001:1003),
+        timepoint = rep(2018:2025, each = 3),
+        result = gl(3, 4, lab = c("good", "bad", "ugly"), ordered = TRUE)
+    ))
+@
+
+We convert the numeric values for year in the \emph{timepoint}
+column to class \code{"Date"}, using
+\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
+{\code{as.Date()}} with consistent arbitrary values of January 1st for month
+and day: -
+
+<<>>=
+(df <- transform(
+        df,
+        timepoint = as.Date(paste(timepoint, "01", "01", sep = "-"))
+    ))
+@
+
+We can now use the \code{add\_prev\_result()} function with
+default values for all but the first argument to add a column
+of results from the previous observation: -
+
+<<>>=
+(df <- add_prev_result(df))
+@
+
+Finally, we can format the class \code{"Date"}
+\emph{timepoint} column to show just the year,
+as in the original data: -
+
+<<>>=
+transform(df, timepoint = format(timepoint, "%Y"))
+@
+
+\section{Convert numeric values representing year and month to class \code{"Date"}}
+
+We create another example data frame of longitudinal data
+containing year and month July 2024 to June 2025 as
+numeric values for two subjects with observations having
+one of two possible ordinal values: -
+
+<<>>=
+(df <- data.frame(
+        subject = 1001:1002,
+        year = rep(2024:2025, each = 12),
+        month = rep(c(7:12, 1:6), each = 2),
+        result = gl(2, 3, lab = c("low", "high"), ordered = TRUE)
+    ))
+@
+
+We convert numeric values for year and month to class
+\code{"Date"}, using \href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
+{\code{as.Date()}} with a consistent arbitrary value of
+1st for day of the month: -
+
+<<>>=
+(df <- transform(
+        df,
+        timepoint = as.Date(paste(year, month, "01", sep = "-")),
+        year = NULL,
+        month = NULL
+    ))
+@
+
+We can now use the \code{add\_transitions()} function with
+default values for all but the first argument to add a column
+of transitions: -
+
+<<>>=
+(df <- add_transitions(df))
+@
+
+Finally, we can format the class \code{"Date"}
+\emph{timepoint} column to show just the month
+and year, as in the original data: -
+
+<<>>=
+transform(df, timepoint = format(timepoint, "%b-%Y"))
+@
+
+\end{document}
