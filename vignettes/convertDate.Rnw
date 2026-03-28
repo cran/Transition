@@ -30,33 +30,30 @@ options(width = 80, continue = "  ",
         try.outFile = stdout())
 @
 
+\tableofcontents 
+
 \section{Introduction}
 
-For each observation of a subject in a longitudinal study data set,
-the main \strong{Transition} package functions
-\code{add\_prev\_date()}, \code{add\_prev\_result()} and
-\code{add\_transitions()} all need to identify the previous
-observation for that same subject, if any. For compatibility with
-these \strong{Transition} package functions, the timings of
-observations in a dataset, each referred to as a
-\emph{timepoint}, should be coded within the data frame
-as \R{} objects of class
-\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/Dates.html}
-{\code{"Date"}}, representing calendar dates.
+For each observation of a subject in a longitudinal study data set, the main
+\pkg{Transition} package functions \code{add\_prev\_date()}, \code{add\_prev\_result()}
+and \code{add\_transitions()} all need to identify the previous observation for that same
+subject, if any. For compatibility with these \pkg{Transition} package functions, the
+timings of observations in a dataset, each referred to as a \emph{timepoint}, should
+be coded within the data frame as a column of \R{} class
+\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/Dates.html} {\code{"Date"}},
+representing calendar dates.
 
-This vignette explains how timepoints represented by numeric values
-in data may be easily converted to class {\code{"Date"}, using the \R{}
-\strong{base} package function
-\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
-{\code{as.Date()}}.
+This vignette explains how timepoints represented by numeric values in data may easily
+be converted to class {\code{"Date"}, using the \R{} \pkg{base} package function
+\href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html} {\code{as.Date()}}.
 
 \section{Convert numeric values representing year to class \code{"Date"}}
 
-We start by creating an example data frame of longitudinal data
-containing years 2018 to 2025 as numeric values for three subjects
-with observations having one of three possible ordinal values: -
+We start by creating an example data frame of longitudinal data for three subjects,
+containing years 2018 to 2025 as numeric values and with observations having one
+of three possible ordinal values: --
 
-<<>>=
+<<results=hide>>=
 (df <- data.frame(
         subject = rep(1001:1003),
         timepoint = rep(2018:2025, each = 3),
@@ -64,11 +61,20 @@ with observations having one of three possible ordinal values: -
     ))
 @
 
-We convert the numeric values for year in the \emph{timepoint}
-column to class \code{"Date"}, using
+\pagebreak
+
+<<echo=FALSE>>=
+(df <- data.frame(
+        subject = rep(1001:1003),
+        timepoint = rep(2018:2025, each = 3),
+        result = gl(3, 4, lab = c("good", "bad", "ugly"), ordered = TRUE)
+    ))
+@
+
+We convert the numeric values for year in the \code{timepoint} column to class
+\code{"Date"} using
 \href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
-{\code{as.Date()}} with consistent arbitrary values of January 1st for month
-and day: -
+{\code{as.Date()}}, with consistent arbitrary values of January 1st for month and day: --
 
 <<>>=
 (df <- transform(
@@ -77,28 +83,33 @@ and day: -
     ))
 @
 
-We can now use the \code{add\_prev\_result()} function with
-default values for all but the first argument to add a column
-of results from the previous observation: -
+We can now use the \code{add\_prev\_result()} function with default values for all but
+its first argument \code{object}---a \code{data.frame} (or a subclass thereof)---
+to add a column of results from the previous observation: --
 
 <<>>=
 (df <- add_prev_result(df))
 @
 
 Finally, we can format the class \code{"Date"}
-\emph{timepoint} column to show just the year,
-as in the original data: -
+\code{timepoint} column to show just the year,
+as in the original data: --
 
-<<>>=
+<<results=hide>>=
+transform(df, timepoint = format(timepoint, "%Y"))
+@
+
+\pagebreak
+
+<<echo=FALSE>>=
 transform(df, timepoint = format(timepoint, "%Y"))
 @
 
 \section{Convert numeric values representing year and month to class \code{"Date"}}
 
-We create another example data frame of longitudinal data
-containing year and month July 2024 to June 2025 as
-numeric values for two subjects with observations having
-one of two possible ordinal values: -
+We create another example data frame of longitudinal data for two subjects, containing
+year and month from July 2024 to June 2025 as numeric values, and with observations
+having one of two possible ordinal values: --
 
 <<>>=
 (df <- data.frame(
@@ -109,10 +120,9 @@ one of two possible ordinal values: -
     ))
 @
 
-We convert numeric values for year and month to class
-\code{"Date"}, using \href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
-{\code{as.Date()}} with a consistent arbitrary value of
-1st for day of the month: -
+We convert the numeric values for \code{year} and \code{month} to class \code{"Date"}
+using \href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html}
+{\code{as.Date()}}, with a consistent arbitrary value of 1st for day of the month: --
 
 <<>>=
 (df <- transform(
@@ -123,20 +133,96 @@ We convert numeric values for year and month to class
     ))
 @
 
-We can now use the \code{add\_transitions()} function with
-default values for all but the first argument to add a column
-of transitions: -
+We can now use the \code{add\_transitions()} function with default values for all but the
+first argument to add a column of transitions: --
 
 <<>>=
 (df <- add_transitions(df))
 @
 
-Finally, we can format the class \code{"Date"}
-\emph{timepoint} column to show just the month
-and year, as in the original data: -
+Finally, we can format the class \code{"Date"} \code{timepoint} column to show just the
+month and year, as in the original data: --
 
 <<>>=
 transform(df, timepoint = format(timepoint, "%b-%Y"))
+@
+
+\section{Convert numeric values representing ages to class \code{"Date"}}
+
+We inspect the first 22 rows of the \code{Blackmore} data, which includes numeric
+values for age in years rather than dates: --
+
+<<a>>=
+head(Blackmore, 22)
+@
+
+\pagebreak
+
+We shall use the \code{add\_prev\_date()} function to add a column of previous test
+dates. For the \code{timepoint} argument, we convert the age values to class
+\code{"Date"} using \href{https://stat.ethz.ch/R-manual/R-devel/library/base/html/as.Date.html} 
+{\code{as.Date()}} and an arbitrary ``origin'' of 1st January 2000\footnote{This is
+equivalent to assuming all subjects were born on the 1st January 2000, which is
+permissible so long as these dates are not used for any purpose other than that shown
+here.}, to which we add the age in days\footnote{This works because class \code{"Date"}
+is represented internally in days and has a method for the \code{+} operator that returns
+a date.} calculated as \code{365.25 * age} (in years).
+
+<<>>>=
+Blackmore <- transform(
+        Blackmore,
+        timepoint = as.Date("2000-01-01") + round(365.25 * age)
+    )
+
+<<a>>
+@
+
+To use the \code{add\_prev\_date()} function, we need to provide a \code{result}
+argument in one of two permissible formats---an ordered factor, or binary data with values
+of either 1 or 0; note that the \code{exercise} column is neither of these. Since we shall
+not be using the values of the \code{exercise} column for this demonstration, we simply
+add a dummy \code{result} column with values all integer 0: --
+
+<<>>>=
+Blackmore <- transform(Blackmore, result = 0L)
+@
+
+We can now use \code{add\_prev\_date()} with default values for all but the first
+argument: --
+
+<<>>=
+Blackmore <- add_prev_date(Blackmore)
+@
+
+\pagebreak
+
+<<>>=
+<<a>>
+@
+
+Finally, to be consistent with the original data, we can calculate a
+\code{prev\_age}\footnote{Note that by default, \R{} formats the \code{age} column to
+two decimal places because some ages in the \code{Blackmore} dataset are not whole
+numbers of years. These non-whole number ages are always the last observation for an
+individual. Consequently, all ``previous ages'' are indeed whole numbers and \R{} formats
+the \code{prev\_age} column without showing any decimal places.} column from the
+\code{prev\_date} column, which itself can be removed along with the now superfluous
+\code{timepoint} and \code{result} columns: --
+
+<<>>=
+Blackmore <- transform(
+        Blackmore,
+        prev_age = round(
+                as.integer(prev_date - as.Date("2000-01-01")) / 365.25, 2
+            ),
+        timepoint = NULL, result = NULL, prev_date = NULL
+    )
+
+<<a>>
+@
+
+<<echo=FALSE, results=hide>>=
+rm(df, Blackmore)
 @
 
 \end{document}

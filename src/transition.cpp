@@ -345,7 +345,7 @@ inline IntegerVector prevres_intvec(DataFrame object, const char* subject, const
 //' Time points represented by \code{\link{integer}} or \code{\link{numeric}} values can be converted
 //'   to R \code{Dates} conveniently using \code{\link{as.Date}()}. If only \emph{year} information is
 //'   available, arbitrary values could be used consistently for month and day e.g., 1st of January of
-//'   each year; likewise, the first day of each month could be used arbitrary, if only the
+//'   each year; likewise, the first day of each month could be used arbitrarily, if only the
 //'   \emph{year} and \emph{month} were known. See vignette 
 //'   \href{../doc/convertDate.pdf}{Converting numeric values to class \code{"Date"}} for examples.
 //'
